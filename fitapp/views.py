@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet,ModelViewSet
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin,UpdateModelMixin
@@ -11,7 +12,22 @@ from .serializers import CustomerSerializer,MeasurementsSerializer
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,GenericViewSet):
     queryset=Customer.objects.all()
     serializer_class=CustomerSerializer
+    permission_classes=[IsAuthenticated]
     
+    def create(self, request, *args, **kwargs):
+        exist=Customer.objects.get(user_id=self.request.user.id)
+        print(exist)
+        if exist==None:
+            self.serializer.save(user_id=self.request.user.id)  
+            return Response(self.serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response('Customer Already Exist', status=status.HTTP_400_BAD_REQUEST)
+
+
+      
+
+
+        
 
 
 class MeasurementViewSet(ModelViewSet):

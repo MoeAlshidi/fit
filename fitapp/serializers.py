@@ -7,7 +7,8 @@ class MeasurementsSerializer(serializers.ModelSerializer):
         model=Measurement
         fields=['id','date','weight','bust','calves','chest','waist','customer_id']
 class CustomerSerializer(serializers.ModelSerializer):
+    user_id=serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model=Customer
-        fields=['id','user', 'age','height']
+        fields=['id','user_id', 'age','height']
         
