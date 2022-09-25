@@ -26,8 +26,8 @@ class Measurement(models.Model):
 
 class Customer(models.Model):
     user=models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    age=models.PositiveIntegerField(blank=False)
-    height=models.PositiveIntegerField(blank=False)
+    age=models.PositiveIntegerField(blank=False,null=True)
+    height=models.PositiveIntegerField(blank=False,null=True)
     created_on=models.DateTimeField(auto_now_add=True)
   
     # media=models.ForeignKey(Media,on_delete=models.CASCADE, related_name='media')
