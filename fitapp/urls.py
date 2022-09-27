@@ -1,15 +1,18 @@
 from . import views
+from django.urls import path
 from rest_framework_nested import routers
 
 
 router=routers.DefaultRouter()
 
 router.register('customer',views.CustomerViewSet,basename='customer')
-router.register('home',views.HomeViewSet,basename='home')
-router.register('measurements',views.MeasurementViewSet)
+router.register('measurements',views.MeasurementViewSet, basename='measurements')
+
 customer_router=routers.NestedSimpleRouter(router,'customer',lookup='customer')
 
 
 
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('home/',views.home_view, name='home')
+    ]+router.urls

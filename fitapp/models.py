@@ -10,7 +10,10 @@ class Measurement(models.Model):
     calves=models.DecimalField(max_digits=5, decimal_places=2,blank=False)
     chest=models.DecimalField(max_digits=5, decimal_places=2,blank=False)
     waist=models.DecimalField(max_digits=5,decimal_places=2,blank=False)
-    date=models.DateTimeField( blank=True, default=None)
+    date=models.DateTimeField(blank=False, default=None,null=False)
+    
+    class Meta:
+        ordering=['-date']
     
 
 # class Media(models.Model):

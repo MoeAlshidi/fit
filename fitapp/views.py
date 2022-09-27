@@ -1,4 +1,7 @@
+from datetime import date, datetime, timedelta
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -9,14 +12,30 @@ from .models import Customer, Measurement
 from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustomerSerializer, HomeSerializer
 
 
-class HomeViewSet(ModelViewSet):
-    serializer_class=HomeSerializer
-    permission_classes=[IsAuthenticated]
-    def get_queryset(self):
-        user=self.request.user
-        customer=Customer.objects.only('id').get(user_id=user.id)
-        return Customer.objects.filter(id=customer.id)
-    
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def home_view(request):
+    week_start = timezone.now()
+    week_start -= timedelta(days=week_start.weekday())
+    week_end = week_start + timedelta(days=7)    
+    user=request.user
+    current_customer=Customer.objects.only('id')\
+                                    .get(user_id=user.id)
+                                    
+    customer=Customer.objects.filter(id=current_customer.id)
+    customer_serializer=CustomerSerializer(customer, many=True)
+    measurement=Measurement.objects.filter(customer_id=current_customer.id, date__range=[week_start, week_end])
+    measurement_serializer=MeasurementsSerializer(measurement, many=True)
+
+    return Response(data={
+                'data':{
+                    'user':customer_serializer.data,
+                    'measurements':measurement_serializer.data
+                }
+    }
+                    )
 
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, GenericViewSet):
     serializer_class=CustomerSerializer
@@ -44,9 +63,22 @@ class MeasurementViewSet(ModelViewSet):
     serializer_class=MeasurementsSerializer
     permission_classes=[IsAuthenticated]
     queryset=Measurement.objects.all()
+    date = datetime.now()
+    start_week = date - timedelta(date.weekday())
+    end_week = start_week + timedelta(7)
     
-    #TODO Before creating the measurements make sure there are no measurements this week.
-    #TODO //
+    #Before creating the measurements make sure there are no measurements this week.
+    # def create(self, request, *args, **kwargs):
+
+    #     user=self.request.user
+    #     customer=Customer.objects.only('id').get(user_id=user.id)
+    #     customer_with_measurements=Customer.\
+    #                             objects.\
+    #                             filter(id=customer.id,measurements__date__range=[self.start_week,self.end_week])
+    #     if customer_with_measurements.exists():
+    #         return Response('Measurements for this week is Already Added', status=status.HTTP_204_NO_CONTENT)
+    #     return super().create(request, *args, **kwargs)
+    
     
     def perform_create(self, serializer):
         user=self.request.user
