@@ -14,7 +14,6 @@ class CustomerSerializer(serializers.ModelSerializer):
         model=Customer
         fields=['id','user_id', 'age','height','created_on']
         
-        
 class UpdateCustomerSerializer(serializers.ModelSerializer):
     user_id=serializers.PrimaryKeyRelatedField(read_only=True)
     created_on=serializers.DateTimeField(read_only=True)
