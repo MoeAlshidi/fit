@@ -19,3 +19,12 @@ class UpdateCustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model=Customer
         fields=['user_id','age','height','created_on']
+        
+        
+class HomeSerializer(serializers.ModelSerializer):
+    measurements=MeasurementsSerializer(many=True)
+    class Meta:
+        model=Customer
+        fields=['user_id','age','height','created_on','measurements']
+        
+    

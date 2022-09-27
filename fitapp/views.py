@@ -6,36 +6,39 @@ from rest_framework.viewsets import GenericViewSet,ModelViewSet
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin,UpdateModelMixin,DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
 from .models import Customer, Measurement
-from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustomerSerializer
+from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustomerSerializer, HomeSerializer
 
 
-
+class HomeViewSet(ModelViewSet):
+    serializer_class=HomeSerializer
+    permission_classes=[IsAuthenticated]
+    def get_queryset(self):
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        return Customer.objects.filter(id=customer.id)
+    
 
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, GenericViewSet):
     serializer_class=CustomerSerializer
     permission_classes=[IsAuthenticated]
-
-    
     @action(detail=False,methods=['GET','PUT'])
     def current(self, request):
-        (customer, created)=Customer.objects.get_or_create(user_id=request.user.id, defaults={'age':None, 'height':None})
-        if not created:
-            if request.method=='GET':
-                serializer=CustomerSerializer(customer)
-                return Response(serializer.data)
-            elif request.method=='PUT':
-                serializer=UpdateCustomerSerializer(customer,data=request.data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                return Response(serializer.data)
-        else:
-            return Response(data={
-                'code':status.HTTP_400_BAD_REQUEST,
-                'data':'Customer is Already Created'}, status=status.HTTP_400_BAD_REQUEST)
+        customer=Customer.objects.get(user_id=request.user.id, )
+
+        if request.method=='GET':
+            serializer=CustomerSerializer(customer)
+            return Response(serializer.data)
+        elif request.method=='PUT':
+            serializer=UpdateCustomerSerializer(customer,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        
             
-            #TODO Go through the api design one more time.
+            #TODO Go through the api design one more
     def perform_create(self, serializer):
-        serializer.save(user_id=self.request.user.id)
+        user=self.request.user
+        serializer.save(user_id=user.id)
 
 
 class MeasurementViewSet(ModelViewSet):
@@ -48,6 +51,10 @@ class MeasurementViewSet(ModelViewSet):
     #TODO //
     
     def perform_create(self, serializer):
-        serializer.save(customer_id=self.request.user.id)
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        serializer.save(customer_id=customer.id)
     def get_queryset(self):
-        return Measurement.objects.filter(customer_id=self.request.user.id)
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        return Measurement.objects.filter(customer_id=customer.id)
