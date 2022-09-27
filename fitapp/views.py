@@ -23,7 +23,7 @@ class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, Gen
     permission_classes=[IsAuthenticated]
     @action(detail=False,methods=['GET','PUT'])
     def current(self, request):
-        customer=Customer.objects.get(user_id=request.user.id, )
+        customer=Customer.objects.get(user_id=request.user.id)
 
         if request.method=='GET':
             serializer=CustomerSerializer(customer)
@@ -33,8 +33,6 @@ class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, Gen
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-        
-            
             #TODO Go through the api design one more
     def perform_create(self, serializer):
         user=self.request.user
