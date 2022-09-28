@@ -38,14 +38,13 @@ def home_view(request):
         
                     )
     
-
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, GenericViewSet):
     serializer_class=CustomerSerializer
     permission_classes=[IsAuthenticated]
     @action(detail=False,methods=['GET','PUT'])
+    
     def current(self, request):
         customer=Customer.objects.get(user_id=request.user.id)
-
         if request.method=='GET':
             serializer=CustomerSerializer(customer)
             return Response(serializer.data)
@@ -54,6 +53,8 @@ class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, Gen
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+        
+        
     def perform_create(self, serializer):
         user=self.request.user
         serializer.save(user_id=user.id)
@@ -64,7 +65,6 @@ class MeasurementViewSet(ModelViewSet):
     serializer_class=MeasurementsSerializer
     permission_classes=[IsAuthenticated]
     
-    # Before creating the measurements make sure there are no measurements this week.
     def create(self, request, *args, **kwargs):
         week_start = timezone.now()
         week_start -= timedelta(days=week_start.weekday())
@@ -73,7 +73,7 @@ class MeasurementViewSet(ModelViewSet):
         customer=Customer.objects.only('id').get(user_id=user.id)
         has_measurements=Measurement.objects.filter(customer_id=customer.id, date__range=[week_start, week_end])
         if has_measurements.exists():
-            return Response('Measurements for this week is Already Added', status=status.HTTP_204_NO_CONTENT)
+            return Response('Measurements For This Week Is Already Added', status=status.HTTP_204_NO_CONTENT)
         return super().create(request, *args, **kwargs)
     
     
