@@ -19,23 +19,25 @@ from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustome
 def home_view(request):
     week_start = timezone.now()
     week_start -= timedelta(days=week_start.weekday())
-    week_end = week_start + timedelta(days=7)    
+    week_end = week_start + timedelta(days=6)    
     user=request.user
     current_customer=Customer.objects.only('id')\
                                     .get(user_id=user.id)
-                                    
     customer=Customer.objects.filter(id=current_customer.id)
     customer_serializer=CustomerSerializer(customer, many=True)
     measurement=Measurement.objects.filter(customer_id=current_customer.id, date__range=[week_start, week_end])
     measurement_serializer=MeasurementsSerializer(measurement, many=True)
-
-    return Response(data={
+    return Response(
+        data={
+                'code':status.HTTP_200_OK,
                 'data':{
                     'user':customer_serializer.data,
                     'measurements':measurement_serializer.data
                 }
-    }
+        }
+        
                     )
+    
 
 class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, GenericViewSet):
     serializer_class=CustomerSerializer
@@ -52,7 +54,6 @@ class CustomerViewSet(CreateModelMixin, RetrieveModelMixin,UpdateModelMixin, Gen
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-            #TODO Go through the api design one more
     def perform_create(self, serializer):
         user=self.request.user
         serializer.save(user_id=user.id)
@@ -62,22 +63,18 @@ class MeasurementViewSet(ModelViewSet):
     http_method_names=['get','put','post']
     serializer_class=MeasurementsSerializer
     permission_classes=[IsAuthenticated]
-    queryset=Measurement.objects.all()
-    date = datetime.now()
-    start_week = date - timedelta(date.weekday())
-    end_week = start_week + timedelta(7)
     
-    #Before creating the measurements make sure there are no measurements this week.
-    # def create(self, request, *args, **kwargs):
-
-    #     user=self.request.user
-    #     customer=Customer.objects.only('id').get(user_id=user.id)
-    #     customer_with_measurements=Customer.\
-    #                             objects.\
-    #                             filter(id=customer.id,measurements__date__range=[self.start_week,self.end_week])
-    #     if customer_with_measurements.exists():
-    #         return Response('Measurements for this week is Already Added', status=status.HTTP_204_NO_CONTENT)
-    #     return super().create(request, *args, **kwargs)
+    # Before creating the measurements make sure there are no measurements this week.
+    def create(self, request, *args, **kwargs):
+        week_start = timezone.now()
+        week_start -= timedelta(days=week_start.weekday())
+        week_end = week_start + timedelta(days=6)   
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        has_measurements=Measurement.objects.filter(customer_id=customer.id, date__range=[week_start, week_end])
+        if has_measurements.exists():
+            return Response('Measurements for this week is Already Added', status=status.HTTP_204_NO_CONTENT)
+        return super().create(request, *args, **kwargs)
     
     
     def perform_create(self, serializer):
