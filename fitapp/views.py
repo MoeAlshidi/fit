@@ -8,8 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet,ModelViewSet
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin,UpdateModelMixin,DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
-from .models import Customer, Measurement
-from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustomerSerializer, HomeSerializer
+from .models import Customer, Measurement, Media
+from .serializers import CustomerSerializer,MeasurementsSerializer,UpdateCustomerSerializer,CustomerImageSerializer
 
 
 
@@ -85,3 +85,17 @@ class MeasurementViewSet(ModelViewSet):
         user=self.request.user
         customer=Customer.objects.only('id').get(user_id=user.id)
         return Measurement.objects.filter(customer_id=customer.id)
+
+
+class CustomerImageViewSet(ModelViewSet):
+    serializer_class=CustomerImageSerializer
+    def get_serializer_context(self):
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        
+        return {'customer_id':customer.id}
+    def get_queryset(self):
+        user=self.request.user
+        customer=Customer.objects.only('id').get(user_id=user.id)
+        return Media.objects.filter(customer_id=customer.id)
+    
