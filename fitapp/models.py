@@ -17,7 +17,6 @@ class Measurement(models.Model):
     class Meta:
         ordering=['-date']
     
-
 class Customer(models.Model):
     
     user=models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
