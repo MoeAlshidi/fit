@@ -21,18 +21,22 @@ def home_view(request):
     week_start -= timedelta(days=week_start.weekday())
     week_end = week_start + timedelta(days=6)    
     user=request.user
+    
     current_customer=Customer.objects.only('id')\
                                     .get(user_id=user.id)
     customer=Customer.objects.filter(id=current_customer.id)
     customer_serializer=CustomerSerializer(customer, many=True)
     measurement=Measurement.objects.filter(customer_id=current_customer.id, date__range=[week_start, week_end])
     measurement_serializer=MeasurementsSerializer(measurement, many=True)
+    images=Media.objects.filter(customer_id=current_customer.id, date__range=[week_start,week_end])
+    images_serializer=CustomerImageSerializer(images, many=True)
     return Response(
         data={
                 'code':status.HTTP_200_OK,
                 'data':{
                     'user':customer_serializer.data,
-                    'measurements':measurement_serializer.data
+                    'measurements':measurement_serializer.data,
+                    'images':images_serializer.data,
                 }
         }
         

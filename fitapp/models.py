@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime    
+from django_resized import ResizedImageField
 from django.conf import settings
 
 # Create your models here.
@@ -42,9 +42,9 @@ class Media(models.Model):
         (TYPE_SIDE,'Side'),
     ]
     customer=models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='images')
-    image=models.ImageField(upload_to='fit/images')
+    image=ResizedImageField(upload_to='fit/images')
     type=models.CharField(max_length=1,choices=TYPE_CHOICES, default=None)
     date=models.DateTimeField(auto_now_add=True)
-
+    
 
 
