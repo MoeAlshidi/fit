@@ -96,8 +96,8 @@ class CustomerImageViewSet(ModelViewSet):
     def get_serializer_context(self):
         user=self.request.user
         customer=Customer.objects.only('id').get(user_id=user.id)
-        
         return {'customer_id':customer.id}
+    
     def get_queryset(self):
         user=self.request.user
         customer=Customer.objects.only('id').get(user_id=user.id)
