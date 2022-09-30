@@ -47,3 +47,10 @@ class Media(models.Model):
     image = ResizedImageField(upload_to='fit/images')
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=None)
     date = models.DateTimeField(auto_now_add=True)
+
+
+class Hydration(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='hydration')
+    goal = models.DecimalField(max_digits=5, decimal_places=2, blank=False, null=True)
+    current_amount = models.DecimalField(max_digits=5, decimal_places=2, blank=False, null=True)
+    date = models.DateTimeField(auto_now_add=True)
