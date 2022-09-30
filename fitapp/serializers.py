@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Customer, Measurement, Media
+from .models import Customer, Measurement, Media, Hydration
 
 
 class MeasurementsSerializer(serializers.ModelSerializer):
@@ -35,3 +35,14 @@ class CustomerImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
         fields = ['id', 'image', 'type', 'customer_id']
+
+
+class HydrationSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        customer_id = self.context['customer_id']
+        return Hydration.objects.create(customer_id=customer_id, **validated_data)
+
+    class Meta:
+        model = Hydration
+        fields = ['id', 'goal', 'current_amount', 'date']

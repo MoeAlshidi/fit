@@ -7,6 +7,7 @@ router = routers.DefaultRouter()
 router.register('customer', views.CustomerViewSet, basename='customer')
 router.register('measurements', views.MeasurementViewSet, basename='measurements')
 router.register('media', views.CustomerImageViewSet, basename='media')
+router.register('hydration', views.HydrationViewSet, basename='hydration')
 
 customer_router = routers.NestedSimpleRouter(router, 'customer', lookup='customer')
 

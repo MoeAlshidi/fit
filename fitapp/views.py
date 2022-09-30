@@ -1,15 +1,17 @@
-from datetime import date, datetime, timedelta
+from datetime import timedelta
+
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
-from .models import Customer, Measurement, Media
-from .serializers import CustomerSerializer, MeasurementsSerializer, UpdateCustomerSerializer, CustomerImageSerializer
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
+from .models import Customer, Measurement, Media, Hydration
+from .serializers import CustomerSerializer, MeasurementsSerializer, UpdateCustomerSerializer, CustomerImageSerializer, \
+    HydrationSerializer
 
 
 @api_view(['GET'])
@@ -91,6 +93,7 @@ class MeasurementViewSet(ModelViewSet):
 
 class CustomerImageViewSet(ModelViewSet):
     serializer_class = CustomerImageSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         user = self.request.user
@@ -101,3 +104,18 @@ class CustomerImageViewSet(ModelViewSet):
         user = self.request.user
         customer = Customer.objects.only('id').get(user_id=user.id)
         return Media.objects.filter(customer_id=customer.id)
+
+
+class HydrationViewSet(ModelViewSet):
+    serializer_class = HydrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        user = self.request.user
+        customer = Customer.objects.only('id').get(user_id=user.id)
+        return {'customer_id': customer.id}
+
+    def get_queryset(self):
+        user = self.request.user
+        customer = Customer.objects.only('id').get(user_id=user.id)
+        return Hydration.objects.filter(customer_id=customer.id)
