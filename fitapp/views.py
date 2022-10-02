@@ -30,6 +30,8 @@ def home_view(request):
     measurement_serializer = MeasurementsSerializer(measurement, many=True)
     images = Media.objects.filter(customer_id=current_customer.id, date__range=[week_start, week_end])
     images_serializer = CustomerImageSerializer(images, many=True)
+    hydration = Hydration.objects.filter(customer_id=current_customer.id, date__range=[week_start, week_end])
+    hydration_serializer = HydrationSerializer(hydration, many=True)
     return Response(
         data={
             'code': status.HTTP_200_OK,
@@ -37,6 +39,7 @@ def home_view(request):
                 'user': customer_serializer.data,
                 'measurements': measurement_serializer.data,
                 'images': images_serializer.data,
+                'hydration': hydration_serializer.data,
             }
         }
 
